@@ -1,0 +1,97 @@
+import * as actionTypes from "./actionTypes";
+import axios from "../../axios-orders";
+
+export const purchaseBurgerSuccess = (id, orderData) => {
+	console.log("purchaseSucess");
+	return {
+		type: actionTypes.PURCHASE_BURGER_SUCCESS,
+		orderId: id,
+		orderData: orderData
+	};
+};
+
+export const purchaseBurgerFail = (error) => {
+	return {
+		type: actionTypes.PURCHASE_BURGER_FAIL,
+		error: error
+	};
+};
+
+export const purchaseBurgerStart = () => {
+	// console.log("purchaseStart");
+	return {
+		type: actionTypes.PURCHASE_BURGER_START
+	};
+};
+
+export const purchaseBurger = (orderData, token) => {
+	return (dispatch) => {
+		// console.log("purchaseBurger");
+		dispatch(purchaseBurgerStart());
+		axios
+			.post("/orders.json?auth=" + token, orderData)
+			.then((response) => {
+				// console.log(response);
+				// this.setState({ loading: false });
+				// this.props.history.push("/");
+				// console.log(response.data);
+				dispatch(purchaseBurgerSuccess(response.data.name, orderData));
+			})
+			.catch((error) => {
+				// console.log(error);
+				// this.setState({ loading: false });
+				dispatch(purchaseBurgerFail(error));
+			});
+	};
+};
+
+export const purchaseInit = () => {
+	return {
+		type: actionTypes.PURCHASE_INIT
+	};
+};
+
+export const fetchOrdersSuccess = (order) => {
+	return {
+		type: actionTypes.FETCH_ORDERS_SUCCESS,
+		orders: order
+	};
+};
+export const fetchOrdersFail = (error) => {
+	return {
+		type: actionTypes.FETCH_ORDERS_FAIL,
+		error: error
+	};
+};
+export const fetchOrdersStart = () => {
+	return {
+		type: actionTypes.FETCH_ORDERS_START
+	};
+};
+export const fetchOrders = (token, userId) => {
+	return (dispatch) => {
+		dispatch(fetchOrdersStart());
+		const queryParams =
+			"?auth=" + token + '&orderBy="userId"&equalTo="' + userId + '"';
+		// console.log(queryParams);
+		axios
+			.get("/orders.json" + queryParams)
+			.then((res) => {
+				// console.log(res.data);
+				const fetchedOrder = [];
+				for (let key in res.data) {
+					fetchedOrder.push({
+						...res.data[key],
+						id: key
+					});
+				}
+				dispatch(fetchOrdersSuccess(fetchedOrder));
+				// this.setState({ loading: false, orders: fetchedOrder });
+				// console.log(this.state.orders);
+			})
+			.catch((error) => {
+				// console.log(error);
+				dispatch(fetchOrdersFail(error));
+			});
+	};
+};
